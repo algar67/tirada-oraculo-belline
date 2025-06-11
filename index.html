@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oráculo de Belline</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+        }
+        .deck {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .card {
+            width: 80px;
+            height: 120px;
+            margin: 5px;
+            background-color: white;
+            border: 1px solid black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .selected {
+            border: 3px solid red;
+        }
+        #selected-cards {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+        .card-container {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .extra-cards {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        img {
+            width: 80px;
+            height: 120px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Oráculo de Belline</h1>
+    <button onclick="shuffleDeck()">Barajar</button>
+    <button onclick="cutDeck()">Cortar</button>
+    <button onclick="drawFiveCards()">Sacar Tirada de 5 Cartas</button>
+    <button onclick="resetGame()">Empezar de Cero</button>
+    <button onclick="addCardToPosition()">Añadir Carta Adicional</button>
+    
+    <div class="deck" id="deck"></div>
+    <div id="selected-cards"></div>
+
+    <script>
+        let deck = Array.from({ length: 53 }, (_, i) => (i + 1).toString());
+        let selectedCards = [[], [], [], [], []];
+
+        function shuffleDeck() {
+            deck = deck.sort(() => Math.random() - 0.5);
+            displayDeck();
+        }
+
+        function cutDeck() {
+            let cutPoint = Math.floor(Math.random() * deck.length);
+            deck = [...deck.slice(cutPoint), ...deck.slice(0, cutPoint)];
+            displayDeck();
+        }
+
+        function drawFiveCards() {
+            for (let i = 0; i < 5; i++) {
+                selectedCards[i] = [deck[i]];
+            }
+            updateSelectedCardsDisplay();
+        }
+
+        function resetGame() {
+            selectedCards = [[], [], [], [], []];
+            shuffleDeck();
+            updateSelectedCardsDisplay();
+        }
+
+        function addCardToPosition() {
+            let position = prompt("Ingrese la posición (1 a 5) donde desea añadir una nueva carta:");
+            position = parseInt(position) - 1;
+            if (position >= 0 && position < 5) {
+                let availableCards = deck.filter(card => !selectedCards.flat().includes(card));
+                if (availableCards.length > 0) {
+                    selectedCards[position].push(availableCards[0]); // Agregar la nueva carta a la posición seleccionada
+                    updateSelectedCardsDisplay();
+                } else {
+                    alert("No hay más cartas disponibles para añadir.");
+                }
+            } else {
+                alert("Posición inválida. Elija un número entre 1 y 5.");
+            }
+        }
+
+        function updateSelectedCardsDisplay() {
+            let selectedCardsDiv = document.getElementById("selected-cards");
+            selectedCardsDiv.innerHTML = `<h2>Tirada en Cruz:</h2>`;
+            selectedCardsDiv.innerHTML += `
+                <div class='card-container' style='grid-column: 2; grid-row: 1;'>
+                    <p>(3) Influencias Positivas</p>
+                    ${generateCardImages(2)}
+                </div>
+                <div class='card-container' style='grid-column: 1; grid-row: 2;'>
+                    <p>(2) Influencias del Pasado</p>
+                    ${generateCardImages(1)}
+                </div>
+                <div class='card-container' style='grid-column: 2; grid-row: 2;'>
+                    <p>(1) Situación Principal</p>
+                    ${generateCardImages(0)}
+                </div>
+                <div class='card-container' style='grid-column: 3; grid-row: 2;'>
+                    <p>(4) Evolución</p>
+                    ${generateCardImages(3)}
+                </div>
+                <div class='card-container' style='grid-column: 2; grid-row: 3;'>
+                    <p>(5) Resultado</p>
+                    ${generateCardImages(4)}
+                </div>`;
+        }
+
+        function generateCardImages(position) {
+            if (selectedCards[position].length === 0) return "<p>Vacío</p>";
+            return `<div class='extra-cards'>` +
+                selectedCards[position].map(card => `<img src='imagenes/${card}.jpg' alt='Carta ${card}'>`).join("") +
+                "</div>";
+        }
+
+        function displayDeck() {
+            let deckContainer = document.getElementById("deck");
+            deckContainer.innerHTML = "";
+            deck.forEach(card => {
+                let cardDiv = document.createElement("div");
+                cardDiv.className = "card";
+                let img = document.createElement("img");
+                img.src = `imagenes/back.jpg`; // Mostrar el dorso de la carta por defecto
+                img.alt = `Carta ${card}`;
+                img.dataset.card = card;
+                img.onclick = function() { revealCard(this); };
+                cardDiv.appendChild(img);
+                deckContainer.appendChild(cardDiv);
+            });
+        }
+
+        displayDeck();
+    </script>
+</body>
+</html>
